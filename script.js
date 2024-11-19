@@ -108,20 +108,57 @@ products.forEach(
         
     });
 
+
 class ShoppingCart {
     constructor(){
         this.items = [];
         this.total = 0;
-        this.taxRate = 0.82;        
+        this.taxRate = 0.82;
+        this.totalProductCount = {};
+    }   
+
+    getTotal(){
+        return this.items.reduce((total,cur) => total + cur.price, 0 )
     }
     
-    addCart(){
 
+    // so when you click "add to cart button", 
+    addCart(productid, productlist){
+        // 1. first you get product info(id, name, price)
+        const selected = productlist.find(item => item.id === productid);
+        const {name, price} = selected;
+        // 2. push item to this.items array
+        this.items.push(selected);
+        // 3. add html element in products-container div which is using class product, product-count, product-category. if it is already exist, just count up        
+		this.totalProductCount[productid] = (this.totalProductCount[productid] + 1 || 1)		
+		this.totalProductCount[productid] > 1
+			? document.getElementById(`productcount${productid}`).innerText = `${this.totalProductCount[productid]}x`
+			: productsContainer.innerHTML += `			
+            <div class="product" id="${productid}">			
+                <p><span class="product-count" id="productcount${productid}"></span>${name}</p>
+                <p>$${price}</p>            
+            </div>
+            `        
+        // 4. get subtotal, taxes, total, and update this.total, taxrate, and inner text of each span element
+        this.total = this.getTotal().toFixed(2);
+        
     }
-
 }
 
 const cart = new ShoppingCart();
+
+const addBtns = document.getElementsByClassName("add-to-cart-btn");
+[...addBtns].forEach(btn => {
+    btn.addEventListener("click",(event)=>{        
+        cart.addCart(Number(event.target.id), products);
+    })
+})
+
+
+// so when you click "cart" button,
+// 1. inner text of span(show-hide-cart) should be inverted
+// 2. cartContainer.style.display should be inverted
+
 cartBtn.addEventListener("click", (event) => {    
     isCartShowing = !isCartShowing    
     ShoppingCart.innerText = isCartShowing ? "Hide" : "Show";
